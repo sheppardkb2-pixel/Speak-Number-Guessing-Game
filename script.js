@@ -1,39 +1,52 @@
 const msgEl = document.getElementById('msg');
 
-// Generate random number
 function getRandomNumber() {
   return Math.floor(Math.random() * 100) + 1;
 }
 
-const randomNum = getRandomNumber();
+let randomNum = getRandomNumber();
 console.log('Number:', randomNum);
 
 window.SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
 
-let recognition = new window.SpeechRecognition();
-
+if (!window.SpeechRecognition) {
+  msgEl.textContent = 'Speech recognition is not supported in this browser.';
+} else {
+  const recognition = new window.SpeechRecognition();
+  recognition.lang = 'en-US';
+  recognition.interimResults = false;
+  recognition.continuous = false;
+}
 // Start recognition and game
 recognition.start();
+document.getElementById
+recognition.addEventListener('end', () => recognition.start());
 
 // Capture user speak
 function onSpeak(event) {
   const msg = event.results[0][0].transcript;  // You can log the event to view the structure of the data
+  writeMessage(msg);
+  checkNumber(msg);
   console.log(msg)
 }
 
 // Listen to and handle the speak event
 recognition.addEventListener('result', onSpeak);
 
+
 // See in the DOM what user has spoken
 function writeMessage(msg) {
-    msgEl.innerHTML = ''; // This line clears the previous message before displaying the new one
- const div = document.createElement('div')
-  div.textContent = 'You said: '
- const span = document.createElement('span')
- span.classList.add('box')
- span.textContent = msg
-msgEl.append(div, span);
+  msgEl.innerHTML = '';
+
+  const div = document.createElement('div');
+  div.textContent = 'You said: ';
+
+  const span = document.createElement('span');
+  span.classList.add('box');
+  span.textContent = msg;
+
+  msgEl.append(div, span);
 }
 
 // Check message against the secret number
@@ -56,14 +69,13 @@ function checkNumber(msg) {
     ten: 10,
   };
 
-  if (wordToNumber[msg]) {
-    console.log(`adjusting ${msg} to ${wordToNumber[msg]}`);
-    msg = wordToNumber[msg];
-  } // Convert to number after adjustments
- 
-  const num = Number(msg);
-console.log(msg);
-    // Check if spoken content is a valid number
+  const spoken = String(msg).trim().toLowerCase();
+  let num = Number(spoken);
+
+  if (wordToNumber[spoken] !== undefined) {
+    num = wordToNumber[spoken];
+  }
+
   if (Number.isNaN(num)) {
     const div = document.createElement('div');
     div.textContent = 'Please say a valid number.';
@@ -84,24 +96,21 @@ console.log(msg);
     const h2 = document.createElement('h2');
     h2.textContent = `Congratulations! You have guessed the number ${num} correctly!`;
 
-      const button = document.createElement('button');
-      button.classList.add('play-again');
-      button.id = 'play-again';
-      button.textContent = 'Play Again';
-      //Add listener and handler to button
-      button.addEventListener('click', () => window.location.reload());
+    const button = document.createElement('button');
+    button.classList.add('play-again');
+    button.id = 'play-again';
+    button.textContent = 'Play Again';
+    button.addEventListener('click', () => {
+      randomNum = getRandomNumber();
+      msgEl.innerHTML = '';
+      console.log('Number:', randomNum);
+    });
 
     msgEl.append(h2, button);
-  } else if (num > randomNum) {
-    const div = document.createElement('div');
-    div.textContent = 'GO LOWER';
-    msgEl.append(div);
-  } else { // if (num < randomNum)
-    const div = document.createElement('div');
-    div.textContent = 'GO HIGHER';
-    msgEl.append(div);
+    return;
   }
+
+  const feedback = document.createElement('div');
+  feedback.textContent = num > randomNum ? 'GO LOWER' : 'GO HIGHER';
+  msgEl.append(feedback);
 }
-
-recognition.addEventListener('end', () => recognition.start());
-
