@@ -12,6 +12,7 @@ window.SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
 
 let recognition = new window.SpeechRecognition();
+recognition.lang = 'en-US';
 
 // Start recognition and game
 recognition.start();
