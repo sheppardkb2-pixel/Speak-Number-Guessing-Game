@@ -1,14 +1,17 @@
 const msgEl = document.getElementById('msg');
 
+// Generate random number
 function getRandomNumber() {
   return Math.floor(Math.random() * 100) + 1;
 }
 
 let randomNum = getRandomNumber();
-console.log('Number:', randomNum);
+console.log('Random number:', randomNum);
 
 window.SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
+
+let recognition = new window.SpeechRecognition();
 
 if (!window.SpeechRecognition) {
   msgEl.textContent = 'Speech recognition is not supported in this browser.';
@@ -35,9 +38,18 @@ function onSpeak(event) {
 recognition.addEventListener('result', onSpeak);
 
 
+//Write what user speaks
+function writeMessage(msg) {
+    msgEl.innerHTML = ';
+    <div>You said: </div>
+    <span class="box">${msg}</span>
+  ';
+}
+
+
 // See in the DOM what user has spoken
 function writeMessage(msg) {
-  msgEl.innerHTML = '';
+  msgEl.innerHTML = '
 
   const div = document.createElement('div');
   div.textContent = 'You said: ';
@@ -46,40 +58,49 @@ function writeMessage(msg) {
   span.classList.add('box');
   span.textContent = msg;
 
-  msgEl.append(div, span);
-}
+    msgEl.append(div, span);
+  }
 
 // Check message against the secret number
 function checkNumber(msg) {
-  const wordToNumber = {
-    one: 1,
-    won: 1,
-    two: 2,
-    to: 2,
-    too: 2,
-    three: 3,
-    four: 4,
-    for: 4,
-    five: 5,
-    six: 6,
-    seven: 7,
-    eight: 8,
-    ate: 8,
-    nine: 9,
-    ten: 10,
-  };
+  let num = Number(msg);  // This is now a let instead of const since I reassign the value below
 
-  const spoken = String(msg).trim().toLowerCase();
-  let num = Number(spoken);
-
-  if (wordToNumber[spoken] !== undefined) {
-    num = wordToNumber[spoken];
+  // Update the value of num if it's a single-digit number
+  if (msg === 'one' || msg === 'won') {
+    num = 1;
+  } else if (msg === 'two') {
+    num = 2;
+  } else if (msg === 'three') {
+    num = 3;
+  } else if (msg === 'four') {
+    num = 4;
+  } else if (msg === 'five') {
+    num = 5;
+  } else if (msg === 'six') {
+    num = 6;
+  } else if (msg === 'seven') {
+    num = 7;
+  } else if (msg === 'eight') {
+    num = 8;
+  } else if (msg === 'nine') {
+    num = 9;
   }
 
+  // Check if the spoken content is a valid number
   if (Number.isNaN(num)) {
     const div = document.createElement('div');
-    div.textContent = 'Please say a valid number.';
+    div.textContent = 'That is not a valid number';
     msgEl.append(div);
+
+    return;
+  }
+
+   // Check if the spoken content is a valid number
+  if (Number.isNaN(num)) {
+    const div = document.createElement('div');
+    div.textContent = 'That is not a valid number';
+    msgEl.append(div);
+
     return;
   }
 
@@ -107,7 +128,15 @@ function checkNumber(msg) {
     });
 
     msgEl.append(h2, button);
-    return;
+  } else if (num > randomNum) {
+    const div = document.createElement('div');
+    div.textContent = 'GO LOWER';
+    msgEl.append(div);
+  } else {
+    // if (num < randomNum)
+    const div = document.createElement('div');
+    div.textContent = 'GO HIGHER';
+    msgEl.append(div);
   }
 
   const feedback = document.createElement('div');
