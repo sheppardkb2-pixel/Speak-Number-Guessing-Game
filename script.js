@@ -6,50 +6,39 @@ function getRandomNumber() {
 }
 
 let randomNum = getRandomNumber();
-console.log('Random number:', randomNum);
+console.log('Number:', randomNum);
 
 window.SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
 
 let recognition = new window.SpeechRecognition();
 
-if (!window.SpeechRecognition) {
-  msgEl.textContent = 'Speech recognition is not supported in this browser.';
-} else {
-  const recognition = new window.SpeechRecognition();
-  recognition.lang = 'en-US';
-  recognition.interimResults = false;
-  recognition.continuous = false;
-}
 // Start recognition and game
 recognition.start();
-document.getElementById
-recognition.addEventListener('end', () => recognition.start());
 
 // Capture user speak
 function onSpeak(event) {
   const msg = event.results[0][0].transcript;  // You can log the event to view the structure of the data
   writeMessage(msg);
   checkNumber(msg);
-  console.log(msg)
+  console.log(msg);
 }
 
 // Listen to and handle the speak event
 recognition.addEventListener('result', onSpeak);
 
-
 //Write what user speaks
 function writeMessage(msg) {
-    msgEl.innerHTML = ';
+   msgEl.innerHTML = `
     <div>You said: </div>
     <span class="box">${msg}</span>
-  ';
+  `;
 }
 
 
 // See in the DOM what user has spoken
 function writeMessage(msg) {
-  msgEl.innerHTML = '
+  msgEl.innerHTML = ''; // This is fine, just clearing out old data, not passing in untrusted data
 
   const div = document.createElement('div');
   div.textContent = 'You said: ';
@@ -58,14 +47,14 @@ function writeMessage(msg) {
   span.classList.add('box');
   span.textContent = msg;
 
-    msgEl.append(div, span);
+  msgEl.append(div, span);
   }
 
 // Check message against the secret number
 function checkNumber(msg) {
   let num = Number(msg);  // This is now a let instead of const since I reassign the value below
 
-  // Update the value of num if it's a single-digit number
+  // Edge cases
   if (msg === 'one' || msg === 'won') {
     num = 1;
   } else if (msg === 'two') {
@@ -85,17 +74,8 @@ function checkNumber(msg) {
   } else if (msg === 'nine') {
     num = 9;
   }
-
+  console.log(msg);
   // Check if the spoken content is a valid number
-  if (Number.isNaN(num)) {
-    const div = document.createElement('div');
-    div.textContent = 'That is not a valid number';
-    msgEl.append(div);
-
-    return;
-  }
-
-   // Check if the spoken content is a valid number
   if (Number.isNaN(num)) {
     const div = document.createElement('div');
     div.textContent = 'That is not a valid number';
@@ -109,6 +89,7 @@ function checkNumber(msg) {
     const div = document.createElement('div');
     div.textContent = 'Number must be between 1 and 100.';
     msgEl.append(div);
+
     return;
   }
 
@@ -121,25 +102,23 @@ function checkNumber(msg) {
     button.classList.add('play-again');
     button.id = 'play-again';
     button.textContent = 'Play Again';
-    button.addEventListener('click', () => {
-      randomNum = getRandomNumber();
-      msgEl.innerHTML = '';
-      console.log('Number:', randomNum);
-    });
+    // Add event listener and handler to button
+    button.addEventListener('click', () => window.location.reload());
 
     msgEl.append(h2, button);
   } else if (num > randomNum) {
     const div = document.createElement('div');
     div.textContent = 'GO LOWER';
+
     msgEl.append(div);
   } else {
     // if (num < randomNum)
     const div = document.createElement('div');
     div.textContent = 'GO HIGHER';
+
     msgEl.append(div);
   }
-
-  const feedback = document.createElement('div');
-  feedback.textContent = num > randomNum ? 'GO LOWER' : 'GO HIGHER';
-  msgEl.append(feedback);
 }
+
+// A the end of the Speech regonition, restart it so that the user can continue to speak
+recognition.addEventListener('end', () => recognition.start());
